@@ -4,8 +4,10 @@ import ctypes, os
 
 from .exceptions import ExceptionSendingRequest, MissingGlizzyTlsLibrary
 from .models import RequestDetails, Response
+from .dependencies import build
 
 # Load the shared library
+build()
 diectory = os.path.dirname(os.path.abspath(__file__))
 try: lib = ctypes.cdll.LoadLibrary(f"{diectory}/libraries/libtls_client.so")
 except OSError: raise MissingGlizzyTlsLibrary("Could not load the shared library")

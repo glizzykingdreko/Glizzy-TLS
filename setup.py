@@ -5,19 +5,9 @@ import subprocess
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-class PostInstallCommand(install):
-    """Post-installation for installation mode."""
-    def run(self):
-        try:
-            subprocess.check_call(['python', 'build_go.py'])
-        except subprocess.CalledProcessError as e:
-            print("Error building go files: ", e.output)
-            raise e
-        install.run(self)
-
 setup(
     name='glizzy_tls',
-    version='0.1.0',
+    version='0.1.0-b',
     description='A fully open-source, cross-platform TLS implementation in Python, leveraging GoLang.',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -26,12 +16,13 @@ setup(
     author_email='glizzykingdreko@protonmail.com',
     license='MIT',
     packages=find_packages(),
+    include_package_data=True, 
     install_requires=[
         # Add your python dependencies here
     ],
     package_data={
         # Include any files found in the 'libraries' directory:
-        'glizzy_tls': ['libraries/*'],
+        'glizzy_tls': ['dependencies/**/*', 'libraries/**/*'],
     },
     classifiers=[
         'Development Status :: 3 - Alpha',
@@ -43,8 +34,5 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
     ],
-    cmdclass={
-        'install': PostInstallCommand,
-    },
     python_requires='>=3.7',
 )

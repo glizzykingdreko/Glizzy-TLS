@@ -1,0 +1,1 @@
+from .build_go import build

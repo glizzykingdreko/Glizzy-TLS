@@ -3,3 +3,5 @@ venv/
 *.h
 *.egg-info/
 *.so
+.eggs/
+dist/

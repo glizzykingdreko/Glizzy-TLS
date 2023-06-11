@@ -1,5 +1,7 @@
 # Glizzy TLS
 
+![Banner](./image/logo.png)
+
 Glizzy TLS is a Python module that brings the power and flexibility of Go's TLS implementation to Python. It's designed to offer TLS (Transport Layer Security) capabilities in Python while taking advantage of the performance benefits of Go.
 
 ## Table of Contents
