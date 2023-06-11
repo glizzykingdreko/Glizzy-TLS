@@ -29,11 +29,13 @@ def check_if_go_is_installed():
         raise Exception("Go is not installed. Please install Go and try again.")
 
 def build():
+    original_dir = os.getcwd()
     current_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(f'{current_dir}')
     glizzy_tls_dir = current_dir.replace('/dependencies', '')
 
     if os.path.exists(f'{glizzy_tls_dir}/libraries/libtls_client.so'):
+        os.chdir(original_dir)
         return
     print("Building the shared object file...")
     install_dependencies()
@@ -41,3 +43,4 @@ def build():
     move_shared_object(glizzy_tls_dir)
     print("Successfully built the shared object file!")
     clean_installation()
+    os.chdir(original_dir)
