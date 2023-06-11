@@ -18,7 +18,7 @@ class PostInstallCommand(install):
 setup(
     name='glizzy_tls',
     version='0.1.0',
-    description='A basic TLS on Python based on a GoLang implementation',
+    description='A fully open-source, cross-platform TLS implementation in Python, leveraging GoLang.',
     long_description=long_description,
     long_description_content_type="text/markdown",
     url='https://github.com/glizzykingdreko/glizzy_tls',
