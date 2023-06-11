@@ -40,7 +40,7 @@ class Session:
         self.cookies = []
     
 
-    def request(self, method, url, headers: dict=None, body=None, cookies: list=None, proxy: str=None, follow_redirects: int=1, timeout_seconds: int=30, details: bool=False) -> Union[Response, RequestDetails]:
+    def request(self, method, url, headers: dict=None, data=None, cookies: list=None, proxy: str=None, follow_redirects: int=1, timeout_seconds: int=30, details: bool=False) -> Union[Response, RequestDetails]:
         """
         Send a TLS request using this session.
 
@@ -48,7 +48,7 @@ class Session:
             method (str): The HTTP method to use for this request.
             url (str): The URL to send the request to.
             headers (dict, optional): The headers to send with this request. Defaults to None.
-            body (dict, optional): The body to send with this request. Defaults to None.
+            data (dict, optional): The body to send with this request. Defaults to None.
             cookies (list, optional): The cookies to send with this request. Defaults to None.
             proxy (str, optional): The proxy to use for this request. Defaults to None.
             follow_redirects (int, optional): Whether or not to follow redirects. Defaults to 1.
@@ -57,7 +57,7 @@ class Session:
         """
         # Convert the parameters to JSON strings
         headers_json = dumps(headers).encode('utf-8') if headers else "".encode('utf-8')
-        body_json = dumps(body).encode('utf-8') if body else "".encode('utf-8')
+        body_json = dumps(data).encode('utf-8') if data else "".encode('utf-8')
 
         # If no cookies were provided for this request, use the session cookies
         if not cookies:
