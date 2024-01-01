@@ -1,4 +1,4 @@
-from json import dumps
+from json import dumps, loads
 from typing import Union
 import ctypes, os
 
@@ -25,18 +25,39 @@ lib.SendTlsRequest.argtypes = [
     ctypes.c_char_p   # client_hello
 ]
 
+# Specify the return type for the GetAllClientProfiles function
+lib.GetAllClientProfiles.restype = ctypes.c_char_p
+
 # Specify the return type for the SendTlsRequest function
 lib.SendTlsRequest.restype = ctypes.c_char_p
 
 class Session:
-    def __init__(self, client_hello: str="Chrome_112"):
+    @staticmethod
+    def get_all_client_profiles():
+        """
+        Get all client profiles from the Go shared library.
+
+        Returns:
+            list: A list of all client profiles.
+        """
+        try:
+            # Call the GetAllClientProfiles function from the Go shared library
+            profiles_json = lib.GetAllClientProfiles().decode('utf-8')
+            # Convert the JSON string to a Python dictionary
+            profiles_dict = loads(profiles_json)
+            # Convert the dictionary to a list
+            return list(profiles_dict.keys())
+        except Exception as e:
+            raise ExceptionSendingRequest(f"Failed to get client profiles: {e}")
+
+    def __init__(self, client_hello: str="chrome_120"):
         """ 
         Create a new TLS session.
 
         Args:
-            client_hello (str, optional): The client hello to use for this session. Defaults to "Chrome_112".
+            client_hello (str, optional): The client hello to use for this session. Defaults to "chrome_120".
         """
-        self.client_hello = client_hello.capitalize().encode('utf-8')
+        self.client_hello = client_hello.encode('utf-8')
         self.cookies = []
     
 

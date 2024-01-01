@@ -4,8 +4,10 @@ import (
 	"C"
 	"encoding/json"
 	"fmt"
+	"io"
 	fhttp "github.com/bogdanfinn/fhttp"
 	tls_client "github.com/bogdanfinn/tls-client"
+	"github.com/bogdanfinn/tls-client/profiles"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -38,6 +40,15 @@ type FinalResponse struct {
 	Response ResponseDetails `json:"response"`
 }
 
+//export GetAllClientProfiles
+func GetAllClientProfiles() *C.char {
+	jsonProfiles, err := json.Marshal(profiles.MappedTLSClients)
+	if err != nil {
+		// Handle error
+		return C.CString("{}")
+	}
+	return C.CString(string(jsonProfiles))
+}
 //export SendTlsRequest
 func SendTlsRequest(method *C.char, urlStr *C.char, headers *C.char, body *C.char, cookies *C.char, proxy *C.char, followRedirects C.int, timeoutSeconds C.int, clientProfile *C.char) *C.char {
 	gMethod := C.GoString(method)
@@ -54,33 +65,19 @@ func SendTlsRequest(method *C.char, urlStr *C.char, headers *C.char, body *C.cha
 	json.Unmarshal([]byte(gHeaders), &headerMap)
 
 	jar := tls_client.NewCookieJar()
-	var clientProfileValue tls_client.ClientProfile
-	// you need to replace this switch statement with the correct mapping from string to tls_client.ClientProfile
-	switch gClientProfile {
-	case "Chrome_105":
-		clientProfileValue = tls_client.Chrome_105
-	case "Chrome_106":
-		clientProfileValue = tls_client.Chrome_106
-	case "Chrome_107":
-		clientProfileValue = tls_client.Chrome_107
-	case "Chrome_108":
-		clientProfileValue = tls_client.Chrome_108
-	case "Chrome_109":
-		clientProfileValue = tls_client.Chrome_109
-	case "Chrome_110":
-		clientProfileValue = tls_client.Chrome_110
-	case "Chrome_111":
-		clientProfileValue = tls_client.Chrome_111
-	case "Chrome_112":
-		clientProfileValue = tls_client.Chrome_112
-	default:
-		clientProfileValue = tls_client.Chrome_112
+	
+	clientProfileValue, ok := profiles.MappedTLSClients[gClientProfile]
+	if !ok {
+		// Handle the case where the client profile is not found
+		log.Println("Invalid client profile:", gClientProfile)
+		return C.CString(fmt.Sprintf("{\"error\": \"Invalid client profile: %v\"}", gClientProfile))
 	}
 
 	options := []tls_client.HttpClientOption{
 		tls_client.WithTimeoutSeconds(gTimeoutSeconds),
 		tls_client.WithClientProfile(clientProfileValue),
 		tls_client.WithCookieJar(jar),
+		tls_client.WithCharlesProxy("127.0.0.1", "8888"),
 	}
 
 	client, err := tls_client.NewHttpClient(tls_client.NewNoopLogger(), options...)
@@ -103,7 +100,25 @@ func SendTlsRequest(method *C.char, urlStr *C.char, headers *C.char, body *C.cha
 		client.SetFollowRedirect(false)
 	}
 
-	req, err := fhttp.NewRequest(gMethod, gUrl, strings.NewReader(gBody))
+	var reader io.Reader
+	if headerMap["Content-Type"] == "application/x-www-form-urlencoded" {
+		values := url.Values{}
+		// Parse the body string into a map
+		bodyMap := make(map[string]string)
+		err := json.Unmarshal([]byte(gBody), &bodyMap)
+		if err != nil {
+			log.Println(err)
+			return C.CString(fmt.Sprintf("{\"error\": \"%v\"}", err.Error()))
+		}
+		// Add the fields from the map to the url.Values object
+		for key, value := range bodyMap {
+			values.Add(key, value)
+		}
+		reader = strings.NewReader(values.Encode())
+	} else {
+		reader = strings.NewReader(gBody)
+	}
+	req, err := fhttp.NewRequest(gMethod, gUrl, reader)
 	if err != nil {
 		log.Println(err)
 		return C.CString(fmt.Sprintf("{\"error\": \"%v\"}", err))
@@ -164,7 +179,7 @@ func SendTlsRequest(method *C.char, urlStr *C.char, headers *C.char, body *C.cha
 		Method:  gMethod,
 		URL:     gUrl,
 		Headers: headerMap,
-		ClientHelloId:  tls_client.Chrome_105.GetClientHelloStr(),
+		ClientHelloId:  clientProfileValue.GetClientHelloStr(),
 		Cookies: cookieList,
 	}
 

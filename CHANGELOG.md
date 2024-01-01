@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
+## [0.1.5] - 2023-06-11
+### Improved
+- Client hello loading and selection
+- Added `Session.get_all_client_profiles()` to get a list of all the available client hello
+
 ## [0.1.3] - 2023-06-11
 ### Fixed
 - Fixed an installation bug with directories not being reset properly.

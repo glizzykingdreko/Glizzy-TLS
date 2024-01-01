@@ -5,3 +5,5 @@ venv/
 *.so
 .eggs/
 dist/
+post.py
+v2/
